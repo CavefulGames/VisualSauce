@@ -1,0 +1,15 @@
+{
+  "name": "VisualSauce",
+  "tree": {
+    "$className": "DataModel",
+
+    "ReplicatedStorage": {
+      "Packages": {
+        "$path": "roblox_packages",
+        "VisualSauce": {
+          "$path": "src"
+        }
+      }
+    }
+  }
+}
