@@ -13,9 +13,8 @@ physics
 ]=]
 
 local jecs = require("./roblox_packages/jecs")
-local types = require("@self/types")
 
-type World = types.World
+type World = jecs.World
 
 return function(world: World?)
     local world = world or jecs.world()
