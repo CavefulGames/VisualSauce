@@ -20,6 +20,9 @@ export type Componenets = {
     Physics: Component<boolean>,
     Grenade: Component<boolean>,
     Tempentity: Component<boolean>,
+
+    --// World Props
+    GravityAcceleration: Component<number>,
 }
 
 return function(world: World)
@@ -36,6 +39,8 @@ return function(world: World)
         Physics = world:component(),
         Grenade = world:component(),
         Tempentity = world:component(),
+
+        GravityAcceleration = world:component(),
     }
 
     local physics = {}
@@ -53,6 +58,10 @@ return function(world: World)
         world:add(entity, components.CollisionReflection)
 
         world:add(entity, components.Physics)
+
+        if not world:has(entity, components.GravityAcceleration) then
+            world:set(entity, components.GravityAcceleration, 169)
+        end
 
         return entity
     end
@@ -75,7 +84,42 @@ return function(world: World)
         return entity
     end
 
+    function physics.getPhysicsRenderType(entity: Entity): "Physics" | "Grenade" | "Tempentity"
+        local is_physics = world:has(entity, components.Physics)
+        local is_grenade = world:has(entity, components.Grenade)
+        local is_tempentity = world:has(entity, components.Tempentity)
+    
+        if is_physics then
+            if is_grenade or is_tempentity then
+                return error("Invalid Physics Render Type: Only one of [Physics, Grenade, Tempentity is allowed.")
+            end
+
+            return "Physics"
+        end
+
+        if is_grenade then
+            if is_physics or is_tempentity then
+                return error("Invalid Physics Render Type: Only one of [Physics, Grenade, Tempentity is allowed.")
+            end
+
+            return "Grenade"
+        end
+        
+        if is_tempentity then
+            if is_physics or is_grenade then
+                return error("Invalid Physics Render Type: Only one of [Physics, Grenade, Tempentity is allowed.")
+            end
+
+            return "Tempentity"
+        end
+
+        return error("Physics render type is required. Exactly one must be specified.")
+    end
+
     function physics.frame(entity: Entity)
+        local physicsRenderType = physics.getPhysicsRenderType(entity)
+
+        
     end
 
     return physics
