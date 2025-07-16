@@ -1,46 +1,50 @@
 local jecs = require("../roblox_packages/jecs")
 
-type Component<T> = jecs.Entity<T>
-type Entity = jecs.Entity
+type Component<T> = jecs.Id<T>
+type Entity<T=any> = jecs.Entity<T>
 type World = jecs.World
 
-export type Componenets = {
+export type Components = {
     --// Entity Props
     Position: Component<Vector3>,
     Size: Component<Vector3>,
+    Angle: Component<CFrame>,
     Velocity: Component<Vector3>,
     AngularVelocity: Component<Vector3>,
 
     --// Physics Flags
-    Collidable: Component<boolean>,
-    Gravity: Component<boolean>,
-    CollisionReflection: Component<boolean>,
+    FlagCollidable: Component<boolean>,
+    FlagGravity: Component<boolean>,
 
     --// Physics Render Type
     Physics: Component<boolean>,
     Grenade: Component<boolean>,
     Tempentity: Component<boolean>,
+}
 
+export type WorldProps = {
     --// World Props
-    GravityAcceleration: Component<number>,
+    Gravity: number,
 }
 
 return function(world: World)
-    local components: Componenets = {
+    local components: Components = {
         Position = world:component(),
         Size = world:component(),
+        Angle = world:component(),
         Velocity = world:component(),
         AngularVelocity = world:component(),
 
-        Collidable = world:component(),
-        Gravity = world:component(),
-        CollisionReflection = world:component(),
+        FlagCollidable = world:component(),
+        FlagGravity = world:component(),
 
         Physics = world:component(),
         Grenade = world:component(),
         Tempentity = world:component(),
+    }
 
-        GravityAcceleration = world:component(),
+    local worldProps: WorldProps = {
+        Gravity = 9.8,  
     }
 
     local physics = {}
@@ -50,18 +54,14 @@ return function(world: World)
 
         world:set(entity, components.Position, Vector3.zero)
         world:set(entity, components.Size, Vector3.zero)
+        world:set(entity, components.Angle, CFrame.Angles(0, 0, 0))
         world:set(entity, components.Velocity, Vector3.zero)
         world:set(entity, components.AngularVelocity, Vector3.zero)
 
-        world:add(entity, components.Gravity)
-        world:add(entity, components.Collidable)
-        world:add(entity, components.CollisionReflection)
+        world:add(entity, components.FlagGravity)
+        world:add(entity, components.FlagCollidable)
 
         world:add(entity, components.Physics)
-
-        if not world:has(entity, components.GravityAcceleration) then
-            world:set(entity, components.GravityAcceleration, 169)
-        end
 
         return entity
     end
@@ -84,42 +84,29 @@ return function(world: World)
         return entity
     end
 
-    function physics.getPhysicsRenderType(entity: Entity): "Physics" | "Grenade" | "Tempentity"
-        local is_physics = world:has(entity, components.Physics)
-        local is_grenade = world:has(entity, components.Grenade)
-        local is_tempentity = world:has(entity, components.Tempentity)
-    
-        if is_physics then
-            if is_grenade or is_tempentity then
-                return error("Invalid Physics Render Type: Only one of [Physics, Grenade, Tempentity is allowed.")
+    function physics.update(deltaTime: number)
+        --// Update Position
+        for entity: Entity, position: Vector3, velocity: Vector3 in world:query(components.Position, components.Velocity) do
+            if world:has(entity, components.FlagGravity) then
+                --// Apply Gravity
+                local gravity = worldProps.Gravity
+
+                velocity = velocity - Vector3.yAxis * gravity * deltaTime
             end
 
-            return "Physics"
+            --// Apply Props
+            world:set(entity, components.Position, position + velocity * deltaTime)
+            world:set(entity, components.Velocity, velocity)
         end
 
-        if is_grenade then
-            if is_physics or is_tempentity then
-                return error("Invalid Physics Render Type: Only one of [Physics, Grenade, Tempentity is allowed.")
-            end
+        --// Update Angle
+        for entity: Entity, angle: CFrame, angularVelocity: Vector3 in world:query(components.Angle, components.AngularVelocity) do
+            --// Apply AngularVelocity
+            local angularVector = angularVelocity * deltaTime * math.pi / 180
 
-            return "Grenade"
+            --// Apply Props
+            world:set(entity, components.Angle, angle * CFrame.Angles(angularVector.X, angularVector.Y, angularVector.Z))
         end
-        
-        if is_tempentity then
-            if is_physics or is_grenade then
-                return error("Invalid Physics Render Type: Only one of [Physics, Grenade, Tempentity is allowed.")
-            end
-
-            return "Tempentity"
-        end
-
-        return error("Physics render type is required. Exactly one must be specified.")
-    end
-
-    function physics.frame(entity: Entity)
-        local physicsRenderType = physics.getPhysicsRenderType(entity)
-
-        
     end
 
     return physics
