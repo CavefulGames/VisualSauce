@@ -6,6 +6,7 @@ local physicsEcs = visualSauce.physics
 local entity = physicsEcs.entity()
 
 visualSauce.world:set(entity, physicsEcs.components.Velocity, Vector3.new(100, 100, 0))
+visualSauce.world:set(entity, physicsEcs.components.AngularVelocity, Vector3.new(100, 100, 100))
 visualSauce.world:set(entity, physicsEcs.components.Size, Vector3.one * 2)
 
 local RunService = game:GetService('RunService')
@@ -17,6 +18,6 @@ part.Size = Vector3.one * 2
 task.wait(1)
 
 RunService.Heartbeat:Connect(function(dt)
-    physicsEcs.update(dt)
-    part.CFrame = visualSauce.world:get(entity, physicsEcs.components.cframe) :: CFrame
+	physicsEcs.update(dt)
+	part.CFrame = visualSauce.world:get(entity, physicsEcs.components.cframe) :: CFrame
 end)

@@ -162,7 +162,9 @@ return function(world: World)
             end
         end
 
+        --// Update Physics CFrame
         for entity: Entity, position: Vector3, angle: CFrame in world:query(components.Position, components.Angle, components.Physics) do
+            --// Apply CFrame
             world:set(entity, components.cframe, CFrame.new(position) * angle)
         end
 
