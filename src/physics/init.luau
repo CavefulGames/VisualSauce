@@ -117,7 +117,7 @@ return function(world: World)
             world:set(entity, components.Angle, angle * CFrame.Angles(angularVector.X, angularVector.Y, angularVector.Z))
         end
 
-        --// Update Collistion
+        --// Update Collision
         for entity: Entity, position: Vector3, velocity: Vector3, size: Vector3 in world:query(components.Position, components.Velocity, components.Size, flags.Collidable) do
             --// Apply Entity Size
             local result = workspace:Raycast(position, (velocity * deltaTime) + (velocity:Sign() * (size / 2)))
