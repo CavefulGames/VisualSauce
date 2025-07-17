@@ -18,5 +18,5 @@ task.wait(1)
 
 RunService.Heartbeat:Connect(function(dt)
     physicsEcs.update(dt)
-    part.Position = visualSauce.world:get(entity, physicsEcs.components.Position) :: Vector3
+    part.CFrame = visualSauce.world:get(entity, physicsEcs.components.cframe) :: CFrame
 end)
