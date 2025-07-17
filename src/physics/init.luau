@@ -55,10 +55,14 @@ return function(world: World)
     }
 
     local worldProps: WorldProps = {
-        Gravity = 9.8,  
+        Gravity = 169,
     }
 
     local physics = {}
+
+    physics.components = components
+    physics.flags = flags
+    physics.worldProps = worldProps
 
     function physics.entity(id: number?): Entity
         local entity = world:entity(id)
@@ -98,14 +102,15 @@ return function(world: World)
     function physics.update(deltaTime: number)
         --// Update Position
         for entity: Entity, position: Vector3, velocity: Vector3 in world:query(components.Position, components.Velocity) do
-            --// Apply Gravity
-            if world:has(entity, flags.Gravity) then
-                velocity = velocity - Vector3.yAxis * worldProps.Gravity * deltaTime
-            end
-
             --// Apply Props
             world:set(entity, components.Position, position + velocity * deltaTime)
             world:set(entity, components.Velocity, velocity)
+        end
+
+        --// Update Apply Gravity
+        for entity: Entity, velocity: Vector3 in world:query(components.Velocity, flags.Gravity) do
+            --// Apply Gravity
+            world:set(entity, components.Velocity, velocity - Vector3.yAxis * worldProps.Gravity * deltaTime)
         end
 
         --// Update Angle
@@ -136,15 +141,21 @@ return function(world: World)
         --// Update Physics
         for entity: Entity, velocity: Vector3, normal: Vector3 in world:query(components.Velocity, components.normal, components.isColliding, components.Physics) do
             --// Get Reflection Velocity
-            local reflectionVelocity = velocity - ((velocity:Dot(normal) * 2) * normal) * 0.3
+            local dampingReflection = (velocity - 2 * (velocity:Dot(normal)) * normal) * 0.3
 
             --// Apply Reflection Velocity
-            world:set(entity, components.Velocity, reflectionVelocity)
+            world:set(entity, components.Velocity, dampingReflection)
 
             --// Is Stop Entity
-            if reflectionVelocity:Dot(reflectionVelocity) < (30 * 30) then
-                --// Apply Stop Props and Flags
+            if dampingReflection:Dot(dampingReflection) < (30 * 30) then
+                --// Apply Props
                 world:set(entity, components.Velocity, Vector3.zero)
+                
+                --// Is Gravity Colliding
+                if normal.Y > 0.7 then
+                    --// Apply Stop Flags
+                    world:remove(entity, flags.Gravity)
+                end
             end
         end
     end

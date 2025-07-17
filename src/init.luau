@@ -19,6 +19,7 @@ type World = jecs.World
 return function(world: World?)
     local world = world or jecs.world()
     return {
+        world = world,
         physics = require("@self/physics")(world),
     }
 end
