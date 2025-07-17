@@ -158,6 +158,9 @@ return function(world: World)
                 end
             end
         end
+
+        --// Update Temp Entity
+
     end
 
     return physics
