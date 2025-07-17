@@ -11,6 +11,7 @@ export type Components = {
     Angle: Component<CFrame>,
     Velocity: Component<Vector3>,
     AngularVelocity: Component<Vector3>,
+    cframe: Component<CFrame>,
 
     --// Collision Props
     normal: Component<Vector3>,
@@ -40,6 +41,7 @@ return function(world: World)
         Angle = world:component(),
         Velocity = world:component(),
         AngularVelocity = world:component(),
+        cframe = world:component(),
 
         normal = world:component(),
         isColliding = world:component(),
@@ -72,6 +74,7 @@ return function(world: World)
         world:set(entity, components.Angle, CFrame.Angles(0, 0, 0))
         world:set(entity, components.Velocity, Vector3.zero)
         world:set(entity, components.AngularVelocity, Vector3.zero)
+        world:set(entity, components.cframe, CFrame.new())
 
         world:add(entity, flags.Gravity)
         world:add(entity, flags.Collidable)
@@ -138,7 +141,7 @@ return function(world: World)
             world:add(entity, components.isColliding)
         end
 
-        --// Update Physics
+        --// Update Physics Collision
         for entity: Entity, velocity: Vector3, normal: Vector3 in world:query(components.Velocity, components.normal, components.isColliding, components.Physics) do
             --// Get Reflection Velocity
             local dampingReflection = (velocity - 2 * (velocity:Dot(normal)) * normal) * 0.3
@@ -159,8 +162,11 @@ return function(world: World)
             end
         end
 
-        --// Update Temp Entity
+        for entity: Entity, position: Vector3, angle: CFrame in world:query(components.Position, components.Angle, components.Physics) do
+            world:set(entity, components.cframe, CFrame.new(position) * angle)
+        end
 
+        --// Update Temp Entity
     end
 
     return physics
