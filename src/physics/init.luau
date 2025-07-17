@@ -124,12 +124,28 @@ return function(world: World)
         
             --// Is not Colliding
             if not result then
+                world:remove(entity, components.isColliding)
                 continue
             end
 
             --// Apply Props
             world:set(entity, components.normal, result.Normal)
             world:add(entity, components.isColliding)
+        end
+
+        --// Update Physics
+        for entity: Entity, velocity: Vector3, normal: Vector3 in world:query(components.Velocity, components.normal, components.isColliding, components.Physics) do
+            --// Get Reflection Velocity
+            local reflectionVelocity = velocity - ((velocity:Dot(normal) * 2) * normal) * 0.3
+
+            --// Apply Reflection Velocity
+            world:set(entity, components.Velocity, reflectionVelocity)
+
+            --// Is Stop Entity
+            if reflectionVelocity:Dot(reflectionVelocity) < (30 * 30) then
+                --// Apply Stop Props and Flags
+                world:set(entity, components.Velocity, Vector3.zero)
+            end
         end
     end
 
