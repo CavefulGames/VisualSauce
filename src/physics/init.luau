@@ -101,7 +101,7 @@ return function(world: World)
 
     function physics.update(deltaTime: number)
         --// Update Position
-        for entity: Entity, position: Vector3, velocity: Vector3 in world:query(components.Position, components.Velocity) do
+        for entity: Entity, position: Vector3, velocity: Vector3 in world:query(components.Position, components.Velocity, components.Physics) do
             --// Apply Props
             world:set(entity, components.Position, position + velocity * deltaTime)
             world:set(entity, components.Velocity, velocity)
@@ -114,7 +114,7 @@ return function(world: World)
         end
 
         --// Update Angle
-        for entity: Entity, angle: CFrame, angularVelocity: Vector3 in world:query(components.Angle, components.AngularVelocity) do
+        for entity: Entity, angle: CFrame, angularVelocity: Vector3 in world:query(components.Angle, components.AngularVelocity, components.Physics) do
             --// Apply AngularVelocity
             local angularVector = angularVelocity * deltaTime * math.pi / 180
 
@@ -123,7 +123,7 @@ return function(world: World)
         end
 
         --// Update Collision
-        for entity: Entity, position: Vector3, velocity: Vector3, size: Vector3 in world:query(components.Position, components.Velocity, components.Size, flags.Collidable) do
+        for entity: Entity, position: Vector3, velocity: Vector3, size: Vector3 in world:query(components.Position, components.Velocity, components.Size, flags.Collidable, components.Physics) do
             --// Apply Entity Size
             local result = workspace:Raycast(position, (velocity * deltaTime) + (velocity:Sign() * (size / 2)))
         
