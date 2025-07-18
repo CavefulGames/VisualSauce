@@ -310,7 +310,8 @@ return function(world: World)
 			end
 
 			--// Apply Reflection Velocity
-			world:set(entity, components.Velocity, velocity - (2 * velocity:Dot(result.Normal) * result.Normal))
+            velocity = velocity - 2 * (velocity:Dot(result.Normal)) * result.Normal
+			world:set(entity, components.Velocity, velocity)
 
 			--// Apply Angle CFrame
 			local x, y, z = cframe:ToEulerAnglesXYZ()
