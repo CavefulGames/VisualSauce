@@ -3,7 +3,7 @@ local packages = script:WaitForChild("Packages")
 local visualSauce = require(packages:WaitForChild('VisualSauce'))()
 local physicsEcs = visualSauce.physics
 
-local entity = physicsEcs.tempentity()
+local entity = physicsEcs.grenade()
 
 visualSauce.world:set(entity, physicsEcs.components.Velocity, Vector3.new(100, 100, 0))
 visualSauce.world:set(entity, physicsEcs.components.Size, Vector3.one * 2)

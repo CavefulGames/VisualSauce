@@ -130,7 +130,9 @@ return function(world: World)
 		end
 
 		--// Update Physics Gravity
-		for entity: Entity, velocity: Vector3 in world:query(components.Velocity, flags.Gravity) do
+		for entity: Entity, velocity: Vector3 in
+			world:query(components.Velocity, flags.Gravity, physicsRenderType.Physics)
+		do
 			--// Apply Gravity
 			world:set(entity, components.Velocity, velocity - (Vector3.yAxis * worldProps.Gravity * deltaTime))
 		end
@@ -327,6 +329,132 @@ return function(world: World)
 					CFrame.new(cframe.Position) * CFrame.Angles(x * 0.9, y * 0.9, z * 0.9)
 				)
 			end
+		end
+
+		--// Update Grenade Position
+		for entity: Entity, position: Vector3, velocity: Vector3 in
+			world:query(components.Position, components.Velocity, physicsRenderType.Grenade)
+		do
+			--// Apply Props
+			world:set(entity, components.Position, position + velocity * deltaTime)
+			world:set(entity, components.Velocity, velocity)
+		end
+
+		--// Update Grenade Gravity
+		for entity: Entity, velocity: Vector3 in
+			world:query(components.Velocity, flags.Gravity, physicsRenderType.Grenade)
+		do
+			--// Apply Gravity
+			world:set(entity, components.Velocity, velocity - (Vector3.yAxis * worldProps.Gravity * deltaTime))
+		end
+
+		--// Update Grenade Angle
+		for entity: Entity, angle: CFrame, angularVelocity: Vector3 in
+			world:query(components.Angle, components.AngularVelocity, physicsRenderType.Grenade)
+		do
+			--// Apply AngularVelocity
+			local angularVector = angularVelocity * deltaTime * math.pi / 180
+
+			--// Apply Props
+			world:set(
+				entity,
+				components.Angle,
+				angle * CFrame.Angles(angularVector.X, angularVector.Y, angularVector.Z)
+			)
+		end
+
+		--// Update Grenade Collision
+		for entity: Entity, position: Vector3, velocity: Vector3, size: Vector3 in
+			world:query(
+				components.Position,
+				components.Velocity,
+				components.Size,
+				flags.Collidable,
+				physicsRenderType.Grenade
+			)
+		do
+			--// Apply Entity Size
+			local result = workspace:Raycast(position, (velocity * deltaTime) + (velocity:Sign() * (size / 2)))
+
+			--// Is not Colliding
+			if not result then
+				world:remove(entity, components.isColliding)
+				continue
+			end
+
+			--// Apply Props
+			world:set(entity, components.normal, result.Normal)
+			world:add(entity, components.isColliding)
+
+			--// Get Reflection Velocity
+			local dampingReflection = (velocity - 2 * (velocity:Dot(result.Normal)) * result.Normal) * 0.3
+
+			--// Is Gravity Colliding
+			if result.Normal.Y > 0.7 then
+				--// Apply Damping Reflection Velocity
+				world:set(entity, components.Velocity, dampingReflection)
+
+				--// Is Stop
+				if dampingReflection:Dot(dampingReflection) < (30 * 30) then
+					--// Stop Entity
+					world:set(entity, components.Velocity, Vector3.zero)
+
+					--// Angular Velocity
+					local angularVelocity = result.Normal
+
+					--// Get Angular Velocity
+					do
+						local yaw: number, pitch: number
+
+						if not (angularVelocity.X == 0 and angularVelocity.Z == 0) then
+							yaw = 0
+							pitch = angularVelocity.Y > 0 and 270 or 90
+						else
+							yaw = math.atan2(angularVelocity.Z, angularVelocity.X) * 180 / math.pi
+
+							if yaw < 0 then
+								yaw += 360
+							end
+
+							pitch = math.atan2(
+								-angularVelocity.Y,
+								(angularVelocity.X * angularVelocity.X + angularVelocity.Z * angularVelocity.Z) ^ 0.5
+							) * 180 / math.pi
+
+							if pitch < 0 then
+								pitch += 360
+							end
+						end
+
+						angularVelocity = Vector3.new(yaw, math.random(1, 360), pitch)
+					end
+
+					--// Apply Angular Velocity
+					world:set(entity, components.AngularVelocity, angularVelocity)
+
+					--// Apply Flags
+					world:remove(entity, flags.Gravity)
+					world:remove(entity, flags.Collidable)
+				end
+			else
+				--// Is Stop
+				if dampingReflection:Dot(dampingReflection) < (30 * 30) then
+					--// Apply Stop Velocity
+					world:set(entity, components.Velocity, Vector3.zero)
+					world:set(entity, components.AngularVelocity, Vector3.zero)
+				else
+					--// Apply Velocity
+					world:set(entity, components.Velocity, dampingReflection)
+				end
+			end
+		end
+
+		--// Update Grenade CFrame
+		for entity: Entity, position: Vector3, angle: CFrame in
+			world:query(components.Position, components.Angle, physicsRenderType.Grenade)
+		do
+			--// Apply CFrame
+			world:set(entity, components.cframe, CFrame.new(position) * angle)
 		end
 	end
 
