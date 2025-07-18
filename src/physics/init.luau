@@ -4,20 +4,25 @@ type Component<T> = jecs.Id<T>
 type Entity<T=any> = jecs.Entity<T>
 type World = jecs.World
 
+--// Entity Props
 export type Components = {
-    --// Entity Props
+    --// Transform Props
     Position: Component<Vector3>,
     Size: Component<Vector3>,
     Angle: Component<CFrame>,
+    cframe: Component<CFrame>,
+
+    --// Velocity Props
     Velocity: Component<Vector3>,
     AngularVelocity: Component<Vector3>,
-    cframe: Component<CFrame>,
 
     --// Collision Props
     normal: Component<Vector3>,
-    isColliding: Component<boolean>,    
+    isColliding: Component<boolean>,
+}
 
-    --// Physics Render Type
+--// Physics Render Type
+export type PhysicsRenderType = {
     Physics: Component<boolean>,
     Grenade: Component<boolean>,
     Tempentity: Component<boolean>,
@@ -56,6 +61,12 @@ return function(world: World)
         Gravity = world:component(),
     }
 
+    local physicsRenderType: PhysicsRenderType = {
+        Physics = world:component(),
+        Grenade = world:component(),
+        Tempentity = world:component(),
+    }
+
     local worldProps: WorldProps = {
         Gravity = 169,
     }
@@ -79,7 +90,7 @@ return function(world: World)
         world:add(entity, flags.Gravity)
         world:add(entity, flags.Collidable)
 
-        world:add(entity, components.Physics)
+        world:add(entity, physicsRenderType.Physics)
 
         return entity
     end
@@ -87,8 +98,8 @@ return function(world: World)
     function physics.grenade(id: number?): Entity
         local entity = physics.entity(id)
 
-        world:remove(entity, components.Physics)
-        world:add(entity, components.Grenade)
+        world:remove(entity, physicsRenderType.Physics)
+        world:add(entity, physicsRenderType.Grenade)
 
         return entity
     end
@@ -96,15 +107,15 @@ return function(world: World)
     function physics.tempentity(id: number?): Entity
         local entity = physics.entity(id)
 
-        world:remove(entity, components.Physics)
-        world:add(entity, components.Tempentity)
+        world:remove(entity, physicsRenderType.Physics)
+        world:add(entity, physicsRenderType.Tempentity)
 
         return entity
     end
 
     function physics.update(deltaTime: number)
         --// Update Position
-        for entity: Entity, position: Vector3, velocity: Vector3 in world:query(components.Position, components.Velocity, components.Physics) do
+        for entity: Entity, position: Vector3, velocity: Vector3 in world:query(components.Position, components.Velocity, physicsRenderType.Physics) do
             --// Apply Props
             world:set(entity, components.Position, position + velocity * deltaTime)
             world:set(entity, components.Velocity, velocity)
@@ -117,7 +128,7 @@ return function(world: World)
         end
 
         --// Update Angle
-        for entity: Entity, angle: CFrame, angularVelocity: Vector3 in world:query(components.Angle, components.AngularVelocity, components.Physics) do
+        for entity: Entity, angle: CFrame, angularVelocity: Vector3 in world:query(components.Angle, components.AngularVelocity, physicsRenderType.Physics) do
             --// Apply AngularVelocity
             local angularVector = angularVelocity * deltaTime * math.pi / 180
 
@@ -126,7 +137,7 @@ return function(world: World)
         end
 
         --// Update Collision
-        for entity: Entity, position: Vector3, velocity: Vector3, size: Vector3 in world:query(components.Position, components.Velocity, components.Size, flags.Collidable, components.Physics) do
+        for entity: Entity, position: Vector3, velocity: Vector3, size: Vector3 in world:query(components.Position, components.Velocity, components.Size, flags.Collidable, physicsRenderType.Physics) do
             --// Apply Entity Size
             local result = workspace:Raycast(position, (velocity * deltaTime) + (velocity:Sign() * (size / 2)))
         
@@ -142,7 +153,7 @@ return function(world: World)
         end
 
         --// Update Physics Collision
-        for entity: Entity, velocity: Vector3, normal: Vector3 in world:query(components.Velocity, components.normal, components.isColliding, components.Physics) do
+        for entity: Entity, velocity: Vector3, normal: Vector3 in world:query(components.Velocity, components.normal, components.isColliding, physicsRenderType.Physics) do
             --// Get Reflection Velocity
             local dampingReflection = (velocity - 2 * (velocity:Dot(normal)) * normal) * 0.3
 
@@ -163,7 +174,7 @@ return function(world: World)
         end
 
         --// Update Physics CFrame
-        for entity: Entity, position: Vector3, angle: CFrame in world:query(components.Position, components.Angle, components.Physics) do
+        for entity: Entity, position: Vector3, angle: CFrame in world:query(components.Position, components.Angle, physicsRenderType.Physics) do
             --// Apply CFrame
             world:set(entity, components.cframe, CFrame.new(position) * angle)
         end

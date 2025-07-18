@@ -10,7 +10,12 @@ physics
 - components.luau (velocity, rotVelocity 그런거 컴포넌트들 만들기)
 - system.luau (물리 시스템)
 - presets.luau (아니면 helpers.luau? 수류탄/tempentity 조합 그런거)
+
+TODO:
+jecs version update (use world:observer)
+
 ]=]
+
 
 local jecs = require("./roblox_packages/jecs")
 
