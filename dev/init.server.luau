@@ -3,11 +3,11 @@ local packages = script:WaitForChild("Packages")
 local visualSauce = require(packages:WaitForChild('VisualSauce'))()
 local physicsEcs = visualSauce.physics
 
-local entity = physicsEcs.entity()
+local entity = physicsEcs.tempentity()
 
 visualSauce.world:set(entity, physicsEcs.components.Velocity, Vector3.new(100, 100, 0))
-visualSauce.world:set(entity, physicsEcs.components.AngularVelocity, Vector3.new(100, 100, 100))
 visualSauce.world:set(entity, physicsEcs.components.Size, Vector3.one * 2)
+visualSauce.world:add(entity, physicsEcs.flags.Rotate)
 
 local RunService = game:GetService('RunService')
 

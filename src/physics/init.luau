@@ -30,8 +30,12 @@ export type PhysicsRenderType = {
 
 --// Physics Flags
 export type Flags = {
+    --// Global Props
     Collidable: Component<boolean>,
     Gravity: Component<boolean>,
+
+    --// TempEntity Props
+    Rotate: Component<boolean>,
 }
 
 export type WorldProps = {
@@ -59,6 +63,8 @@ return function(world: World)
     local flags: Flags = {
         Collidable = world:component(),
         Gravity = world:component(),
+
+        Rotate = world:component(),
     }
 
     local physicsRenderType: PhysicsRenderType = {
@@ -114,20 +120,20 @@ return function(world: World)
     end
 
     function physics.update(deltaTime: number)
-        --// Update Position
+        --// Update Physics Position
         for entity: Entity, position: Vector3, velocity: Vector3 in world:query(components.Position, components.Velocity, physicsRenderType.Physics) do
             --// Apply Props
             world:set(entity, components.Position, position + velocity * deltaTime)
             world:set(entity, components.Velocity, velocity)
         end
 
-        --// Update Apply Gravity
+        --// Update Physics Gravity
         for entity: Entity, velocity: Vector3 in world:query(components.Velocity, flags.Gravity) do
             --// Apply Gravity
-            world:set(entity, components.Velocity, velocity - Vector3.yAxis * worldProps.Gravity * deltaTime)
+            world:set(entity, components.Velocity, velocity - (Vector3.yAxis * worldProps.Gravity * deltaTime))
         end
 
-        --// Update Angle
+        --// Update Physics Angle
         for entity: Entity, angle: CFrame, angularVelocity: Vector3 in world:query(components.Angle, components.AngularVelocity, physicsRenderType.Physics) do
             --// Apply AngularVelocity
             local angularVector = angularVelocity * deltaTime * math.pi / 180
@@ -136,7 +142,7 @@ return function(world: World)
             world:set(entity, components.Angle, angle * CFrame.Angles(angularVector.X, angularVector.Y, angularVector.Z))
         end
 
-        --// Update Collision
+        --// Update Physics Collision
         for entity: Entity, position: Vector3, velocity: Vector3, size: Vector3 in world:query(components.Position, components.Velocity, components.Size, flags.Collidable, physicsRenderType.Physics) do
             --// Apply Entity Size
             local result = workspace:Raycast(position, (velocity * deltaTime) + (velocity:Sign() * (size / 2)))
@@ -150,12 +156,9 @@ return function(world: World)
             --// Apply Props
             world:set(entity, components.normal, result.Normal)
             world:add(entity, components.isColliding)
-        end
 
-        --// Update Physics Collision
-        for entity: Entity, velocity: Vector3, normal: Vector3 in world:query(components.Velocity, components.normal, components.isColliding, physicsRenderType.Physics) do
             --// Get Reflection Velocity
-            local dampingReflection = (velocity - 2 * (velocity:Dot(normal)) * normal) * 0.3
+            local dampingReflection = (velocity - 2 * (velocity:Dot(result.Normal)) * result.Normal) * 0.3
 
             --// Apply Reflection Velocity
             world:set(entity, components.Velocity, dampingReflection)
@@ -166,7 +169,7 @@ return function(world: World)
                 world:set(entity, components.Velocity, Vector3.zero)
                 
                 --// Is Gravity Colliding
-                if normal.Y > 0.7 then
+                if result.Normal.Y > 0.7 then
                     --// Apply Stop Flags
                     world:remove(entity, flags.Gravity)
                 end
@@ -179,7 +182,92 @@ return function(world: World)
             world:set(entity, components.cframe, CFrame.new(position) * angle)
         end
 
-        --// Update Temp Entity
+        --// Update TempEntity Rotate
+        for entity: Entity, velocity: Vector3 in world:query(components.Velocity, flags.Rotate, physicsRenderType.Tempentity) do
+            --// Apply AngularVelocity
+            world:set(entity, components.AngularVelocity, velocity * deltaTime)
+        end
+
+        --// Update TempEntity Position
+        for entity: Entity, velocity: Vector3, angularVelocity: Vector3, angle: CFrame, cframe: CFrame in world:query(components.Velocity, components.AngularVelocity, components.Angle, components.cframe, physicsRenderType.Tempentity) do
+            --// Apply CFrame
+            world:set(entity, components.cframe, 
+                (CFrame.new(cframe.Position + (velocity * deltaTime)) * CFrame.Angles(cframe:ToEulerAnglesXYZ())) * CFrame.Angles(math.rad(angularVelocity.X), math.rad(angularVelocity.Y), math.rad(angularVelocity.Z))
+            )
+
+            --// Apply Angle
+            world:set(entity, components.Angle, (CFrame.Angles(cframe:ToEulerAnglesXYZ())) * CFrame.Angles(math.rad(angularVelocity.X), math.rad(angularVelocity.Y), math.rad(angularVelocity.Z)))
+        end
+
+        --// Update TempEntity Collision
+        for entity: Entity, cframe: CFrame, velocity: Vector3, size: Vector3 in world:query(components.cframe, components.Velocity, components.Size, flags.Collidable, physicsRenderType.Tempentity) do
+            --// Entity Flags Has Gravity
+            local hasGravity = world:has(entity, flags.Gravity)
+
+            --// Apply Entity Size
+            local result = workspace:Raycast(cframe.Position, (velocity * deltaTime) + (velocity:Sign() * (size / 2)))
+        
+            --// Is not Colliding
+            if not result then
+                --// Apply Gravity
+                if hasGravity then
+                    --// Apply Gravity Velocity
+                    world:set(entity, components.Velocity, velocity - (Vector3.yAxis * worldProps.Gravity * deltaTime))
+                end
+
+                --// Apply Colliding Prop
+                world:remove(entity, components.isColliding)
+                continue
+            end
+
+            --// Apply Collision Props
+            world:add(entity, components.isColliding)
+            world:set(entity, components.normal, result.Normal)
+
+            --// If has Gravity then, apply Velocity
+            if hasGravity then
+                --// Check Hits the floor
+                if result.Normal.Y > 0.9 then
+                    --// If falling
+                    if velocity.Y <= 0 and velocity.Y >= -(worldProps.Gravity * deltaTime) * 3 then
+                        --// Apply Flags
+                        world:remove(entity, flags.Collidable)
+                        world:remove(entity, flags.Gravity)
+                        world:remove(entity, flags.Rotate)
+
+                        --// Apply CFrame
+                        local _, y, _ = cframe:ToEulerAnglesYXZ()
+                        world:set(entity, components.cframe, CFrame.new(cframe.Position) * CFrame.Angles(0, y, 0))
+
+                        --// Apply Velocity
+                        world:set(entity, components.Velocity, Vector3.zero)
+
+                        --// Apply CFrame
+                        local x, y, z = cframe:ToEulerAnglesXYZ()
+                        world:set(entity, components.cframe, CFrame.new(cframe.Position) * CFrame.Angles(x * 0.9, y * 0.9, z * 0.9))
+
+                        continue
+                    end
+                end
+            end
+            
+            --// Apply Reflection Velocity
+            world:set(entity, components.Velocity, velocity - (2 * velocity:Dot(result.Normal) * result.Normal))
+
+            --// Apply Angle CFrame
+            local x, y, z = cframe:ToEulerAnglesXYZ()
+            world:set(entity, components.cframe, CFrame.new(cframe.Position) * CFrame.Angles(x, -y, z))
+
+            --// Apply CFrame and Velocity
+            if hasGravity then
+                --// Apply Velocity
+                world:set(entity, components.Velocity, velocity * 0.5)
+
+                --// Apply CFrame
+                local x, y, z = cframe:ToEulerAnglesXYZ()
+                world:set(entity, components.cframe, CFrame.new(cframe.Position) * CFrame.Angles(x * 0.9, y * 0.9, z * 0.9))
+            end
+        end
     end
 
     return physics
