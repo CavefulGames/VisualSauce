@@ -1,6 +1,6 @@
 local jecs = require("../roblox_packages/jecs")
 
-type Component<T> = jecs.Id<T>
+type Component<T = any> = jecs.Id<T>
 type Entity<T = any> = jecs.Entity<T>
 type World = jecs.World
 
@@ -18,24 +18,24 @@ export type Components = {
 
 	--// Collision Props
 	normal: Component<Vector3>,
-	isColliding: Component<boolean>,
+	isColliding: Component,
 }
 
 --// Physics Render Type
 export type PhysicsRenderType = {
-	Physics: Component<boolean>,
-	Grenade: Component<boolean>,
-	Tempentity: Component<boolean>,
+	Physics: Component,
+	Grenade: Component,
+	Tempentity: Component,
 }
 
 --// Physics Flags
 export type Flags = {
 	--// Global Props
-	Collidable: Component<boolean>,
-	Gravity: Component<boolean>,
+	Collidable: Component,
+	Gravity: Component,
 
 	--// TempEntity Props
-	Rotate: Component<boolean>,
+	Rotate: Component,
 }
 
 export type WorldProps = {
