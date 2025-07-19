@@ -90,7 +90,7 @@ return function(world: World)
 	physics.flags = flags
 	physics.worldProps = worldProps
 
-	function physics.entity(id: number?): Entity
+	function physics.physics(id: number?): Entity
 		local entity = world:entity(id)
 
 		world:set(entity, components.Position, Vector3.zero)
@@ -109,7 +109,7 @@ return function(world: World)
 	end
 
 	function physics.grenade(id: number?): Entity
-		local entity = physics.entity(id)
+		local entity = physics.physics(id)
 
 		world:remove(entity, physicsRenderType.Physics)
 		world:add(entity, physicsRenderType.Grenade)
@@ -118,7 +118,7 @@ return function(world: World)
 	end
 
 	function physics.tempentity(id: number?): Entity
-		local entity = physics.entity(id)
+		local entity = physics.physics(id)
 
 		world:remove(entity, physicsRenderType.Physics)
 		world:add(entity, physicsRenderType.Tempentity)
@@ -127,7 +127,7 @@ return function(world: World)
 	end
 
 	function physics.normal(id: number?): Entity
-		local entity = physics.entity(id)
+		local entity = physics.physics(id)
 
 		world:remove(entity, physicsRenderType.Physics)
 		world:add(entity, physicsRenderType.Normal)
