@@ -126,7 +126,6 @@ return function(world: World)
 		do
 			--// Apply Props
 			world:set(entity, components.Position, position + velocity * deltaTime)
-			world:set(entity, components.Velocity, velocity)
 		end
 
 		--// Update Physics Gravity
@@ -338,7 +337,6 @@ return function(world: World)
 		do
 			--// Apply Props
 			world:set(entity, components.Position, position + velocity * deltaTime)
-			world:set(entity, components.Velocity, velocity)
 		end
 
 		--// Update Grenade Gravity
