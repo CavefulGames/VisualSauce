@@ -10,15 +10,15 @@ export type Components = {
 	Position: Component<Vector3>,
 	Size: Component<Vector3>,
 	Angle: Component<CFrame>,
-	cframe: Component<CFrame>,
+	CFrame: Component<CFrame>,
 
 	--// Velocity Props
 	Velocity: Component<Vector3>,
 	AngularVelocity: Component<Vector3>,
 
 	--// Collision Props
-	normal: Component<Vector3>,
-	isColliding: Component,
+	Normal: Component<Vector3>,
+	IsColliding: Component,
 }
 
 --// Physics Render Type
@@ -50,10 +50,10 @@ return function(world: World)
 		Angle = world:component(),
 		Velocity = world:component(),
 		AngularVelocity = world:component(),
-		cframe = world:component(),
+		CFrame = world:component(),
 
-		normal = world:component(),
-		isColliding = world:component(),
+		Normal = world:component(),
+		IsColliding = world:component(),
 
 		Physics = world:component(),
 		Grenade = world:component(),
@@ -91,7 +91,7 @@ return function(world: World)
 		world:set(entity, components.Angle, CFrame.Angles(0, 0, 0))
 		world:set(entity, components.Velocity, Vector3.zero)
 		world:set(entity, components.AngularVelocity, Vector3.zero)
-		world:set(entity, components.cframe, CFrame.new())
+		world:set(entity, components.CFrame, CFrame.new())
 
 		world:add(entity, flags.Gravity)
 		world:add(entity, flags.Collidable)
@@ -167,13 +167,13 @@ return function(world: World)
 
 			--// Is not Colliding
 			if not result then
-				world:remove(entity, components.isColliding)
+				world:remove(entity, components.IsColliding)
 				continue
 			end
 
 			--// Apply Props
-			world:set(entity, components.normal, result.Normal)
-			world:add(entity, components.isColliding)
+			world:set(entity, components.Normal, result.Normal)
+			world:add(entity, components.IsColliding)
 
 			--// Get Reflection Velocity
 			local dampingReflection = (velocity - 2 * (velocity:Dot(result.Normal)) * result.Normal) * 0.3
@@ -199,7 +199,7 @@ return function(world: World)
 			world:query(components.Position, components.Angle, physicsRenderType.Physics)
 		do
 			--// Apply CFrame
-			world:set(entity, components.cframe, CFrame.new(position) * angle)
+			world:set(entity, components.CFrame, CFrame.new(position) * angle)
 		end
 
 		--// Update TempEntity Rotate
@@ -216,14 +216,14 @@ return function(world: World)
 				components.Velocity,
 				components.AngularVelocity,
 				components.Angle,
-				components.cframe,
+				components.CFrame,
 				physicsRenderType.Tempentity
 			)
 		do
 			--// Apply CFrame
 			world:set(
 				entity,
-				components.cframe,
+				components.CFrame,
 				(CFrame.new(cframe.Position + (velocity * deltaTime)) * CFrame.Angles(cframe:ToEulerAnglesXYZ()))
 					* CFrame.Angles(
 						math.rad(angularVelocity.X),
@@ -248,7 +248,7 @@ return function(world: World)
 		--// Update TempEntity Collision
 		for entity: Entity, cframe: CFrame, velocity: Vector3, size: Vector3 in
 			world:query(
-				components.cframe,
+				components.CFrame,
 				components.Velocity,
 				components.Size,
 				flags.Collidable,
@@ -270,13 +270,13 @@ return function(world: World)
 				end
 
 				--// Apply Colliding Prop
-				world:remove(entity, components.isColliding)
+				world:remove(entity, components.IsColliding)
 				continue
 			end
 
 			--// Apply Collision Props
-			world:add(entity, components.isColliding)
-			world:set(entity, components.normal, result.Normal)
+			world:add(entity, components.IsColliding)
+			world:set(entity, components.Normal, result.Normal)
 
 			--// If has Gravity then, apply Velocity
 			if hasGravity then
@@ -291,7 +291,7 @@ return function(world: World)
 
 						--// Apply CFrame
 						local _, y, _ = cframe:ToEulerAnglesYXZ()
-						world:set(entity, components.cframe, CFrame.new(cframe.Position) * CFrame.Angles(0, y, 0))
+						world:set(entity, components.CFrame, CFrame.new(cframe.Position) * CFrame.Angles(0, y, 0))
 
 						--// Apply Velocity
 						world:set(entity, components.Velocity, Vector3.zero)
@@ -300,7 +300,7 @@ return function(world: World)
 						local x, y, z = cframe:ToEulerAnglesXYZ()
 						world:set(
 							entity,
-							components.cframe,
+							components.CFrame,
 							CFrame.new(cframe.Position) * CFrame.Angles(x * 0.9, y * 0.9, z * 0.9)
 						)
 
@@ -315,7 +315,7 @@ return function(world: World)
 
 			--// Apply Angle CFrame
 			local x, y, z = cframe:ToEulerAnglesXYZ()
-			world:set(entity, components.cframe, CFrame.new(cframe.Position) * CFrame.Angles(x, -y, z))
+			world:set(entity, components.CFrame, CFrame.new(cframe.Position) * CFrame.Angles(x, -y, z))
 
 			--// Apply CFrame and Velocity
 			if hasGravity then
@@ -326,7 +326,7 @@ return function(world: World)
 				local x, y, z = cframe:ToEulerAnglesXYZ()
 				world:set(
 					entity,
-					components.cframe,
+					components.CFrame,
 					CFrame.new(cframe.Position) * CFrame.Angles(x * 0.9, y * 0.9, z * 0.9)
 				)
 			end
@@ -379,13 +379,13 @@ return function(world: World)
 
 			--// Is not Colliding
 			if not result then
-				world:remove(entity, components.isColliding)
+				world:remove(entity, components.IsColliding)
 				continue
 			end
 
 			--// Apply Props
-			world:set(entity, components.normal, result.Normal)
-			world:add(entity, components.isColliding)
+			world:set(entity, components.Normal, result.Normal)
+			world:add(entity, components.IsColliding)
 
 			--// Get Reflection Velocity
 			local dampingReflection = (velocity - 2 * (velocity:Dot(result.Normal)) * result.Normal) * 0.3
@@ -455,7 +455,7 @@ return function(world: World)
 			world:query(components.Position, components.Angle, physicsRenderType.Grenade)
 		do
 			--// Apply CFrame
-			world:set(entity, components.cframe, CFrame.new(position) * angle)
+			world:set(entity, components.CFrame, CFrame.new(position) * angle)
 		end
 	end
 
