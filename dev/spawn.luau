@@ -90,8 +90,8 @@ function module.normal(info: {
     world:set(entity, components.AngularVelocity, info.angularVelocity or Vector3.zero)
 
     world:set(entity, components.Mass, info.mass or 1)
-    world:set(entity, components.Inertia, (info.mass or 1) * (size:Dot(size) / 12) or 1)
-    world:set(entity, components.ContactPoint, info.contactPoint or 1)
+    world:set(entity, components.Inertia, ((info.mass or 1) * (size:Dot(size) / 12)) or 1)
+    world:set(entity, components.ContactPoint, info.contactPoint or Vector3.one * 0.5)
 
     return entity
 end

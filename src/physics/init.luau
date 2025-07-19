@@ -104,6 +104,7 @@ return function(world: World)
 		world:set(entity, components.Velocity, Vector3.zero)
 		world:set(entity, components.AngularVelocity, Vector3.zero)
 		world:set(entity, components.CFrame, CFrame.new())
+        world:set(entity, components.Elasticity, 0.3)
 
 		world:add(entity, flags.Gravity)
 		world:add(entity, flags.Collidable)

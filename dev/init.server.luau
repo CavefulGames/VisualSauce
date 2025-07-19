@@ -1,7 +1,7 @@
 local spawn = require("@self/spawn")
 local RunService = game:GetService('RunService')
 
-local grenade = spawn.grenade {
+local grenade = spawn.normal {
 	position = Vector3.new(0, 10, 0),
 	size = Vector3.new(0.5, 1, 0.5),
 	velocity = Vector3.new(5, 0, 5),
