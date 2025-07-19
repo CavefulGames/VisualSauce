@@ -542,11 +542,19 @@ return function(world: World)
 				components.Elasticity,
 				components.Mass,
 				components.Inertia,
-				components.ContactPoint,
-				flags.Collidable,
-				physicsRenderType.Normal
+				components.ContactPoint
 			)
 		do
+            --// Check PhysicsRenderType
+            if not world:has(entity, physicsRenderType.Normal) then
+                continue
+            end
+
+            --// Check Flags
+            if not world:has(entity, flags.Collidable) then
+                continue
+            end
+
 			--// Apply Entity Size
 			local result = workspace:Raycast(position, (velocity * deltaTime) + (velocity:Sign() * (size / 2)))
 
