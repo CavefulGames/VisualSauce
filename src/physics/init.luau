@@ -552,19 +552,11 @@ return function(world: World)
 			--// Normal Velocity
 			local normalVelocity = relativeVelocity:Dot(result.Normal)
 
-			--// Not Collision
-			if normalVelocity >= 0 then
-				continue
-			end
-
 			--// Impulse
 			local impulse = result.Normal * (-1.3 * normalVelocity * mass)
 
-			--// Add Velocity
-			angularVelocity += (r:Cross(impulse) / inertia) * 0.3
-
 			--// Apply Velocity
-			world:set(entity, components.AngularVelocity, angularVelocity)
+			world:set(entity, components.AngularVelocity, angularVelocity + (r:Cross(impulse) / inertia) * 0.3)
 
 			--// Get Reflection Velocity
 			local dampingReflection = (velocity - 2 * (velocity:Dot(result.Normal)) * result.Normal) * 0.3
