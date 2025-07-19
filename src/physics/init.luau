@@ -104,7 +104,7 @@ return function(world: World)
 		world:set(entity, components.Velocity, Vector3.zero)
 		world:set(entity, components.AngularVelocity, Vector3.zero)
 		world:set(entity, components.CFrame, CFrame.new())
-        world:set(entity, components.Elasticity, 0.3)
+		world:set(entity, components.Elasticity, 0.3)
 
 		world:add(entity, flags.Gravity)
 		world:add(entity, flags.Collidable)
@@ -239,9 +239,16 @@ return function(world: World)
 		end
 
 		--// Update TempEntity Position
-		for entity: Entity, position: Vector3, angle: CFrame, velocity: Vector3, angularVelocity: Vector3, cframe: CFrame in
+		for
+			entity: Entity,
+			position: Vector3,
+			angle: CFrame,
+			velocity: Vector3,
+			angularVelocity: Vector3,
+			cframe: CFrame
+		in
 			world:query(
-                components.Position,
+				components.Position,
 				components.Angle,
 				components.Velocity,
 				components.AngularVelocity,
@@ -249,8 +256,8 @@ return function(world: World)
 				physicsRenderType.Tempentity
 			)
 		do
-            --// Apply Position
-            world:set(entity, components.Position, position + (velocity * deltaTime))
+			--// Apply Position
+			world:set(entity, components.Position, position + (velocity * deltaTime))
 
 			--// Apply CFrame
 			world:set(
@@ -280,7 +287,7 @@ return function(world: World)
 		--// Update TempEntity Collision
 		for entity: Entity, position: Vector3, cframe: CFrame, velocity: Vector3, size: Vector3 in
 			world:query(
-                components.Position,
+				components.Position,
 				components.CFrame,
 				components.Velocity,
 				components.Size,
@@ -545,15 +552,15 @@ return function(world: World)
 				components.ContactPoint
 			)
 		do
-            --// Check PhysicsRenderType
-            if not world:has(entity, physicsRenderType.Normal) then
-                continue
-            end
+			--// Check PhysicsRenderType
+			if not world:has(entity, physicsRenderType.Normal) then
+				continue
+			end
 
-            --// Check Flags
-            if not world:has(entity, flags.Collidable) then
-                continue
-            end
+			--// Check Flags
+			if not world:has(entity, flags.Collidable) then
+				continue
+			end
 
 			--// Apply Entity Size
 			local result = workspace:Raycast(position, (velocity * deltaTime) + (velocity:Sign() * (size / 2)))
