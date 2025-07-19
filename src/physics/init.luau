@@ -133,7 +133,7 @@ return function(world: World)
 		world:add(entity, physicsRenderType.Normal)
 
 		world:set(entity, components.Mass, 1)
-		world:set(entity, components.Inertia, 1 / 4)
+		world:set(entity, components.Inertia, 0)
 		world:set(entity, components.ContactPoint, Vector3.one * 0.5)
 
 		return entity
