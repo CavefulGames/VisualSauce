@@ -239,20 +239,24 @@ return function(world: World)
 		end
 
 		--// Update TempEntity Position
-		for entity: Entity, velocity: Vector3, angularVelocity: Vector3, angle: CFrame, cframe: CFrame in
+		for entity: Entity, position: Vector3, angle: CFrame, velocity: Vector3, angularVelocity: Vector3, cframe: CFrame in
 			world:query(
+                components.Position,
+				components.Angle,
 				components.Velocity,
 				components.AngularVelocity,
-				components.Angle,
 				components.CFrame,
 				physicsRenderType.Tempentity
 			)
 		do
+            --// Apply Position
+            world:set(entity, components.Position, position + (velocity * deltaTime))
+
 			--// Apply CFrame
 			world:set(
 				entity,
 				components.CFrame,
-				(CFrame.new(cframe.Position + (velocity * deltaTime)) * CFrame.Angles(cframe:ToEulerAnglesXYZ()))
+				(CFrame.new(position + (velocity * deltaTime)) * CFrame.Angles(cframe:ToEulerAnglesXYZ()))
 					* CFrame.Angles(
 						math.rad(angularVelocity.X),
 						math.rad(angularVelocity.Y),
@@ -274,8 +278,9 @@ return function(world: World)
 		end
 
 		--// Update TempEntity Collision
-		for entity: Entity, cframe: CFrame, velocity: Vector3, size: Vector3 in
+		for entity: Entity, position: Vector3, cframe: CFrame, velocity: Vector3, size: Vector3 in
 			world:query(
+                components.Position,
 				components.CFrame,
 				components.Velocity,
 				components.Size,
@@ -287,7 +292,7 @@ return function(world: World)
 			local hasGravity = world:has(entity, flags.Gravity)
 
 			--// Apply Entity Size
-			local result = workspace:Raycast(cframe.Position, (velocity * deltaTime) + (velocity:Sign() * (size / 2)))
+			local result = workspace:Raycast(position, (velocity * deltaTime) + (velocity:Sign() * (size / 2)))
 
 			--// Is not Colliding
 			if not result then
@@ -319,7 +324,7 @@ return function(world: World)
 
 						--// Apply CFrame
 						local _, y, _ = cframe:ToEulerAnglesYXZ()
-						world:set(entity, components.CFrame, CFrame.new(cframe.Position) * CFrame.Angles(0, y, 0))
+						world:set(entity, components.CFrame, CFrame.new(position) * CFrame.Angles(0, y, 0))
 
 						--// Apply Velocity
 						world:set(entity, components.Velocity, Vector3.zero)
@@ -329,7 +334,7 @@ return function(world: World)
 						world:set(
 							entity,
 							components.CFrame,
-							CFrame.new(cframe.Position) * CFrame.Angles(x * 0.9, y * 0.9, z * 0.9)
+							CFrame.new(position) * CFrame.Angles(x * 0.9, y * 0.9, z * 0.9)
 						)
 
 						continue
