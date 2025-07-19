@@ -311,7 +311,7 @@ return function(world: World)
 				--// Check Hits the floor
 				if result.Normal.Y > 0.9 then
 					--// If falling
-					if velocity.Y <= 0 and velocity.Y >= -(worldProps.Gravity * deltaTime) * (3 / 15) then
+					if velocity.Y <= 0 and velocity.Y >= -(worldProps.Gravity * deltaTime) * 3 then
 						--// Apply Flags
 						world:remove(entity, flags.Collidable)
 						world:remove(entity, flags.Gravity)
