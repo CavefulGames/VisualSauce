@@ -19,6 +19,11 @@ export type Components = {
 	--// Collision Props
 	Normal: Component<Vector3>,
 	IsColliding: Component,
+
+	--// Normal Props
+	Mass: Component<number>,
+	Inertia: Component<number>,
+	ContactPoint: Component<Vector3>,
 }
 
 --// Physics Render Type
@@ -26,6 +31,7 @@ export type PhysicsRenderType = {
 	Physics: Component,
 	Grenade: Component,
 	Tempentity: Component,
+	Normal: Component,
 }
 
 --// Physics Flags
@@ -55,9 +61,9 @@ return function(world: World)
 		Normal = world:component(),
 		IsColliding = world:component(),
 
-		Physics = world:component(),
-		Grenade = world:component(),
-		Tempentity = world:component(),
+		Mass = world:component(),
+		Inertia = world:component(),
+		ContactPoint = world:component(),
 	}
 
 	local flags: Flags = {
@@ -71,6 +77,7 @@ return function(world: World)
 		Physics = world:component(),
 		Grenade = world:component(),
 		Tempentity = world:component(),
+		Normal = world:component(),
 	}
 
 	local worldProps: WorldProps = {
@@ -115,6 +122,19 @@ return function(world: World)
 
 		world:remove(entity, physicsRenderType.Physics)
 		world:add(entity, physicsRenderType.Tempentity)
+
+		return entity
+	end
+
+	function physics.normal(id: number?): Entity
+		local entity = physics.entity(id)
+
+		world:remove(entity, physicsRenderType.Physics)
+		world:add(entity, physicsRenderType.Normal)
+
+		world:set(entity, components.Mass, 1)
+		world:set(entity, components.Inertia, 1 / 4)
+		world:set(entity, components.ContactPoint, Vector3.one * 0.5)
 
 		return entity
 	end
@@ -309,7 +329,7 @@ return function(world: World)
 			end
 
 			--// Apply Reflection Velocity
-            velocity = velocity - 2 * (velocity:Dot(result.Normal)) * result.Normal
+			velocity = velocity - 2 * (velocity:Dot(result.Normal)) * result.Normal
 			world:set(entity, components.Velocity, velocity)
 
 			--// Apply Angle CFrame
@@ -451,6 +471,124 @@ return function(world: World)
 		--// Update Grenade CFrame
 		for entity: Entity, position: Vector3, angle: CFrame in
 			world:query(components.Position, components.Angle, physicsRenderType.Grenade)
+		do
+			--// Apply CFrame
+			world:set(entity, components.CFrame, CFrame.new(position) * angle)
+		end
+
+		--// Update Normal Position
+		for entity: Entity, position: Vector3, velocity: Vector3 in
+			world:query(components.Position, components.Velocity, physicsRenderType.Normal)
+		do
+			--// Apply Props
+			world:set(entity, components.Position, position + velocity * deltaTime)
+		end
+
+		--// Update Normal Gravity
+		for entity: Entity, velocity: Vector3 in
+			world:query(components.Velocity, flags.Gravity, physicsRenderType.Normal)
+		do
+			--// Apply Gravity
+			world:set(entity, components.Velocity, velocity - (Vector3.yAxis * worldProps.Gravity * deltaTime))
+		end
+
+		--// Update Normal Angle
+		for entity: Entity, angle: CFrame, angularVelocity: Vector3 in
+			world:query(components.Angle, components.AngularVelocity, physicsRenderType.Normal)
+		do
+			--// Apply AngularVelocity
+			local angularVector = angularVelocity * deltaTime * math.pi / 180
+
+			--// Apply Props
+			world:set(
+				entity,
+				components.Angle,
+				angle * CFrame.Angles(angularVector.X, angularVector.Y, angularVector.Z)
+			)
+		end
+
+		--// Update Normal Collision
+		for
+			entity: Entity,
+			position: Vector3,
+			velocity: Vector3,
+			angularVelocity: Vector3,
+			size: Vector3,
+			mass: number,
+			inertia: number,
+			contactPoint: Vector3
+		in
+			world:query(
+				components.Position,
+				components.Velocity,
+				components.AngularVelocity,
+				components.Size,
+				components.Mass,
+				components.Inertia,
+				components.ContactPoint,
+				flags.Collidable,
+				physicsRenderType.Normal
+			)
+		do
+			--// Apply Entity Size
+			local result = workspace:Raycast(position, (velocity * deltaTime) + (velocity:Sign() * (size / 2)))
+
+			--// Is not Colliding
+			if not result then
+				world:remove(entity, components.IsColliding)
+				continue
+			end
+
+			--// Apply Props
+			world:set(entity, components.Normal, result.Normal)
+			world:add(entity, components.IsColliding)
+
+			--// Collision Distance
+			local r = (size * contactPoint) - position
+
+			--// Relative Velocity
+			local relativeVelocity = velocity + angularVelocity:Cross(r)
+
+			--// Normal Velocity
+			local normalVelocity = relativeVelocity:Dot(result.Normal)
+
+			--// Not Collision
+			if normalVelocity >= 0 then
+				continue
+			end
+
+			--// Impulse
+			local impulse = result.Normal * (-1.3 * normalVelocity * mass)
+
+			--// Add Velocity
+			angularVelocity += (r:Cross(impulse) / inertia) * 0.3
+
+			--// Apply Velocity
+			world:set(entity, components.AngularVelocity, angularVelocity)
+
+			--// Get Reflection Velocity
+			local dampingReflection = (velocity - 2 * (velocity:Dot(result.Normal)) * result.Normal) * 0.3
+
+			--// Apply Reflection Velocity
+			world:set(entity, components.Velocity, dampingReflection)
+
+			--// Is Stop Entity
+			if dampingReflection:Dot(dampingReflection) < (30 * 30) then
+				--// Apply Props
+				world:set(entity, components.Velocity, Vector3.zero)
+				world:set(entity, components.AngularVelocity, Vector3.zero)
+
+				--// Is Gravity Colliding
+				if result.Normal.Y > 0.7 then
+					--// Apply Stop Flags
+					world:remove(entity, flags.Gravity)
+				end
+			end
+		end
+
+		--// Update Normal CFrame
+		for entity: Entity, position: Vector3, angle: CFrame in
+			world:query(components.Position, components.Angle, physicsRenderType.Normal)
 		do
 			--// Apply CFrame
 			world:set(entity, components.CFrame, CFrame.new(position) * angle)
