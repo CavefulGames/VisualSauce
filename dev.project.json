@@ -5,16 +5,16 @@
 
     "ServerScriptService": {
       "DevVisualSauce": {
-        "Packages": {
-          "$className": "Folder",
-          "roblox_packages": {
-            "$path": "roblox_packages"
-          },
-          "VisualSauce": {
-            "$path": "src"
-          }
+        "$className": "Folder",
+        "roblox_packages": {
+          "$path": "roblox_packages"
         },
-        "$path": "dev"
+        "VisualSauce": {
+          "$path": "src"
+        },
+        "dev": {
+          "$path": "dev"
+        }
       }
     }
   }
