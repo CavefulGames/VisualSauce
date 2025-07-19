@@ -8,9 +8,12 @@ type World = jecs.World
 export type Components = {
 	--// Transform Props
 	Position: Component<Vector3>,
-	Size: Component<Vector3>,
 	Angle: Component<CFrame>,
 	CFrame: Component<CFrame>,
+
+	--// Physical Properties
+	Elasticity: Component<number>,
+	Size: Component<Vector3>,
 
 	--// Velocity Props
 	Velocity: Component<Vector3>,
@@ -52,11 +55,13 @@ export type WorldProps = {
 return function(world: World)
 	local components: Components = {
 		Position = world:component(),
-		Size = world:component(),
 		Angle = world:component(),
 		Velocity = world:component(),
 		AngularVelocity = world:component(),
 		CFrame = world:component(),
+
+		Size = world:component(),
+		Elasticity = world:component(),
 
 		Normal = world:component(),
 		IsColliding = world:component(),
@@ -113,6 +118,8 @@ return function(world: World)
 
 		world:remove(entity, physicsRenderType.Physics)
 		world:add(entity, physicsRenderType.Grenade)
+
+		world:set(entity, components.Elasticity, 0.5)
 
 		return entity
 	end
@@ -172,11 +179,12 @@ return function(world: World)
 		end
 
 		--// Update Physics Collision
-		for entity: Entity, position: Vector3, velocity: Vector3, size: Vector3 in
+		for entity: Entity, position: Vector3, velocity: Vector3, size: Vector3, elasticity: number in
 			world:query(
 				components.Position,
 				components.Velocity,
 				components.Size,
+				components.Elasticity,
 				flags.Collidable,
 				physicsRenderType.Physics
 			)
@@ -195,13 +203,13 @@ return function(world: World)
 			world:add(entity, components.IsColliding)
 
 			--// Get Reflection Velocity
-			local dampingReflection = (velocity - 2 * (velocity:Dot(result.Normal)) * result.Normal) * 0.3
+			local dampingReflection = (velocity - 2 * (velocity:Dot(result.Normal)) * result.Normal) * elasticity
 
 			--// Apply Reflection Velocity
 			world:set(entity, components.Velocity, dampingReflection)
 
 			--// Is Stop Entity
-			if dampingReflection:Dot(dampingReflection) < (30 * 30) then
+			if dampingReflection:Dot(dampingReflection) < (30 * 30) / 15 then
 				--// Apply Props
 				world:set(entity, components.Velocity, Vector3.zero)
 
@@ -302,7 +310,7 @@ return function(world: World)
 				--// Check Hits the floor
 				if result.Normal.Y > 0.9 then
 					--// If falling
-					if velocity.Y <= 0 and velocity.Y >= -(worldProps.Gravity * deltaTime) * 3 then
+					if velocity.Y <= 0 and velocity.Y >= -(worldProps.Gravity * deltaTime) * (3 / 15) then
 						--// Apply Flags
 						world:remove(entity, flags.Collidable)
 						world:remove(entity, flags.Gravity)
@@ -383,11 +391,12 @@ return function(world: World)
 		end
 
 		--// Update Grenade Collision
-		for entity: Entity, position: Vector3, velocity: Vector3, size: Vector3 in
+		for entity: Entity, position: Vector3, velocity: Vector3, size: Vector3, elasticity: number in
 			world:query(
 				components.Position,
 				components.Velocity,
 				components.Size,
+				components.Elasticity,
 				flags.Collidable,
 				physicsRenderType.Grenade
 			)
@@ -406,7 +415,7 @@ return function(world: World)
 			world:add(entity, components.IsColliding)
 
 			--// Get Reflection Velocity
-			local dampingReflection = (velocity - 2 * (velocity:Dot(result.Normal)) * result.Normal) * 0.3
+			local dampingReflection = (velocity - 2 * (velocity:Dot(result.Normal)) * result.Normal) * elasticity
 
 			--// Is Gravity Colliding
 			if result.Normal.Y > 0.7 then
@@ -414,7 +423,7 @@ return function(world: World)
 				world:set(entity, components.Velocity, dampingReflection)
 
 				--// Is Stop
-				if dampingReflection:Dot(dampingReflection) < (30 * 30) then
+				if dampingReflection:Dot(dampingReflection) < (30 * 30) / 15 then
 					--// Stop Entity
 					world:set(entity, components.Velocity, Vector3.zero)
 
@@ -457,7 +466,7 @@ return function(world: World)
 				end
 			else
 				--// Is Stop
-				if dampingReflection:Dot(dampingReflection) < (30 * 30) then
+				if dampingReflection:Dot(dampingReflection) < (30 * 30) / 15 then
 					--// Apply Stop Velocity
 					world:set(entity, components.Velocity, Vector3.zero)
 					world:set(entity, components.AngularVelocity, Vector3.zero)
@@ -514,6 +523,7 @@ return function(world: World)
 			velocity: Vector3,
 			angularVelocity: Vector3,
 			size: Vector3,
+			elasticity: number,
 			mass: number,
 			inertia: number,
 			contactPoint: Vector3
@@ -523,6 +533,7 @@ return function(world: World)
 				components.Velocity,
 				components.AngularVelocity,
 				components.Size,
+				components.Elasticity,
 				components.Mass,
 				components.Inertia,
 				components.ContactPoint,
@@ -556,16 +567,16 @@ return function(world: World)
 			local impulse = result.Normal * (-1.3 * normalVelocity * mass)
 
 			--// Apply Velocity
-			world:set(entity, components.AngularVelocity, angularVelocity + (r:Cross(impulse) / inertia) * 0.3)
+			world:set(entity, components.AngularVelocity, angularVelocity + (r:Cross(impulse) / inertia) * elasticity)
 
 			--// Get Reflection Velocity
-			local dampingReflection = (velocity - 2 * (velocity:Dot(result.Normal)) * result.Normal) * 0.3
+			local dampingReflection = (velocity - 2 * (velocity:Dot(result.Normal)) * result.Normal) * elasticity
 
 			--// Apply Reflection Velocity
 			world:set(entity, components.Velocity, dampingReflection)
 
 			--// Is Stop Entity
-			if dampingReflection:Dot(dampingReflection) < (30 * 30) then
+			if dampingReflection:Dot(dampingReflection) < (30 * 30) / 15 then
 				--// Apply Props
 				world:set(entity, components.Velocity, Vector3.zero)
 				world:set(entity, components.AngularVelocity, Vector3.zero)
