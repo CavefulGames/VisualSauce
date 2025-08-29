@@ -16,8 +16,5 @@ sourcemap_generator = ".pesde/scripts/sourcemap_generator.luau"
 build = "scripts/build.luau"
 devbuild = "scripts/dev-build.luau"
 
-[dev_dependencies]
-scripts = { name = "pesde/scripts_rojo", version = "^0.1.0", target = "lune" }
-
 [dependencies]
 jecs = { name = "marked/jecs", version = "^0.9.0-rc.2" }
