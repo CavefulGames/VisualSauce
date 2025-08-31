@@ -21,13 +21,7 @@ export type Components = {
 
 	--// Collision Props
 	Normal: Component<Vector3>,
-	IsColliding: Component,
-
-	--// Normal Props
-	Mass: Component<number>,
-	Inertia: Component<number>,
-	ContactPoint: Component<Vector3>,
-	Friction: Component<number>,
+	IsColliding: Component<boolean>,
 }
 
 --// Physics Render Type
@@ -66,11 +60,6 @@ return function(world: World)
 
 		Normal = world:component(),
 		IsColliding = world:component(),
-
-		Mass = world:component(),
-		Inertia = world:component(),
-		ContactPoint = world:component(),
-		Friction = world:component(),
 	}
 
 	local flags: Flags = {
@@ -107,7 +96,6 @@ return function(world: World)
 		world:set(entity, components.AngularVelocity, Vector3.zero)
 		world:set(entity, components.CFrame, CFrame.new())
 		world:set(entity, components.Elasticity, 0.3)
-		world:set(entity, components.Friction, 0.25)
 
 		world:add(entity, flags.Gravity)
 		world:add(entity, flags.Collidable)
@@ -142,10 +130,6 @@ return function(world: World)
 
 		world:remove(entity, physicsRenderType.Physics)
 		world:add(entity, physicsRenderType.Normal)
-
-		world:set(entity, components.Mass, 1)
-		world:set(entity, components.Inertia, 0)
-		world:set(entity, components.ContactPoint, Vector3.one * 0.5)
 
 		return entity
 	end
@@ -536,41 +520,65 @@ return function(world: World)
 		for
 			entity: Entity,
 			position: Vector3,
+			angle: CFrame,
 			velocity: Vector3,
 			angularVelocity: Vector3,
 			size: Vector3,
-			elasticity: number,
-			mass: number,
-			inertia: number,
-			friction: number
+			elasticity: number
 		in
 			world:query(
 				components.Position,
+				components.Angle,
 				components.Velocity,
 				components.AngularVelocity,
 				components.Size,
 				components.Elasticity,
-				components.Mass,
-				components.Inertia,
-				components.Friction
+				physicsRenderType.Normal,
+				flags.Collidable
 			)
 		do
-			--// Check PhysicsRenderType
-			if not world:has(entity, physicsRenderType.Normal) then
+			--// Apply Entity Size
+			local result = workspace:Raycast(position, (velocity * deltaTime) + (velocity:Sign() * (size / 2)))
+			
+			--// Get is last colliding
+			local isLastColliding = world:has(entity, components.IsColliding)
+
+			--// Is not Colliding
+			if not result then
+				world:remove(entity, components.IsColliding)
 				continue
 			end
 
-			--// Check Flags
-			if not world:has(entity, flags.Collidable) then
-				continue
-			end
+			--// Apply Props
+			world:set(entity, components.Normal, result.Normal)
+			world:add(entity, components.IsColliding)
+           
+            local normalVelocity = result.Normal:Dot(velocity) * result.Normal
 
-			--// Check Contact Point
-			if not world:has(entity, components.ContactPoint) then
-				continue
-			end
+            local tangentialVelocity = velocity - normalVelocity
 
-			--// TODO: Add Normal Collision
+            local frictionValue = if isLastColliding then
+                1 - 0.16 * deltaTime / tangentialVelocity.Magnitude
+            else
+                1 - 0.16 * ((1 + elasticity) * normalVelocity.Magnitude) / tangentialVelocity.Magnitude 
+
+            world:set(
+                entity, 
+                components.Velocity, 
+                tangentialVelocity * math.max(frictionValue, 0) - elasticity * normalVelocity
+            )
+
+            world:set(
+                entity, 
+                components.AngularVelocity, 
+                result.Normal:Cross(velocity) / elasticity * angle:ToEulerAnglesYXZ()
+            )
+
+            world:set(
+                entity,
+                components.Position, 
+                position + result.Normal * 0.01
+            )
 		end
 
 		--// Update Normal CFrame

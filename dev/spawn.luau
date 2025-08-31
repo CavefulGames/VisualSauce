@@ -75,9 +75,6 @@ function module.normal(info: {
 
 	velocity: Vector3?,
 	angularVelocity: Vector3?,
-
-    mass: number?,
-    contactPoint: Vector3?,
 })
     local entity = ecs.normal()
     local size = info.size or Vector3.zero
@@ -88,10 +85,6 @@ function module.normal(info: {
     
     world:set(entity, components.Velocity, info.velocity or Vector3.zero)
     world:set(entity, components.AngularVelocity, info.angularVelocity or Vector3.zero)
-
-    world:set(entity, components.Mass, info.mass or 1)
-    world:set(entity, components.Inertia, ((info.mass or 1) * (size:Dot(size) / 12)) or 1)
-    world:set(entity, components.ContactPoint, info.contactPoint or Vector3.one * 0.5)
 
     return entity
 end

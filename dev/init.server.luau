@@ -4,7 +4,7 @@ local RunService = game:GetService('RunService')
 local grenade = spawn.normal {
 	position = Vector3.new(0, 10, 0),
 	size = Vector3.new(0.5, 1, 0.5),
-	velocity = Vector3.new(0, 10, 0),
+	velocity = Vector3.new(30, 60, 0),
 	angularVelocity = Vector3.new(math.random(1, 360), math.random(1, 360), math.random(1, 360))
 }
 
