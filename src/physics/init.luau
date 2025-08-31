@@ -40,10 +40,13 @@ export type Flags = {
 
 	--// TempEntity Props
 	Rotate: Component,
+
+    --// Normal Props
+	LastColliding: Component,
 }
 
 export type WorldProps = {
-	--// World Props
+    --// World Props
 	Gravity: number,
 }
 
@@ -65,8 +68,8 @@ return function(world: World)
 	local flags: Flags = {
 		Collidable = world:component(),
 		Gravity = world:component(),
-
 		Rotate = world:component(),
+        LastColliding = world:component(),
 	}
 
 	local physicsRenderType: PhysicsRenderType = {
@@ -541,7 +544,12 @@ return function(world: World)
 			local result = workspace:Raycast(position, (velocity * deltaTime) + (velocity:Sign() * (size / 2)))
 			
 			--// Get is last colliding
-			local isLastColliding = world:has(entity, components.IsColliding)
+			local isLastColliding = not world:has(entity, flags.LastColliding)
+
+            --// Add LastColliding flag
+            if isLastColliding then
+                world:add(entity, flags.LastColliding)
+            end
 
 			--// Is not Colliding
 			if not result then
@@ -558,9 +566,9 @@ return function(world: World)
             local tangentialVelocity = velocity - normalVelocity
 
             local frictionValue = if isLastColliding then
-                1 - 0.16 * deltaTime / tangentialVelocity.Magnitude
+                1 - 0.08 * deltaTime / tangentialVelocity.Magnitude
             else
-                1 - 0.16 * ((1 + elasticity) * normalVelocity.Magnitude) / tangentialVelocity.Magnitude 
+                1 - 0.08 * ((1 + elasticity) * normalVelocity.Magnitude) / tangentialVelocity.Magnitude 
 
             world:set(
                 entity, 
