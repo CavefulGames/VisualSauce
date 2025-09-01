@@ -561,15 +561,19 @@ return function(world: World)
 			world:set(entity, components.Normal, result.Normal)
 			world:add(entity, components.IsColliding)
            
+			--// Get Normal Velocity
             local normalVelocity = result.Normal:Dot(velocity) * result.Normal
 
+			--// Get Tangential Velocity 
             local tangentialVelocity = velocity - normalVelocity
 
+			--// Get Friction Value
             local frictionValue = if isLastColliding then
                 1 - 0.08 * deltaTime / tangentialVelocity.Magnitude
             else
                 1 - 0.08 * ((1 + elasticity) * normalVelocity.Magnitude) / tangentialVelocity.Magnitude 
 
+			--// Set props
             world:set(
                 entity, 
                 components.Velocity, 
