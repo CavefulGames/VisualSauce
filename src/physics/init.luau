@@ -41,12 +41,12 @@ export type Flags = {
 	--// TempEntity Props
 	Rotate: Component,
 
-    --// Normal Props
+	--// Normal Props
 	LastColliding: Component,
 }
 
 export type WorldProps = {
-    --// World Props
+	--// World Props
 	Gravity: number,
 }
 
@@ -69,7 +69,7 @@ return function(world: World)
 		Collidable = world:component(),
 		Gravity = world:component(),
 		Rotate = world:component(),
-        LastColliding = world:component(),
+		LastColliding = world:component(),
 	}
 
 	local physicsRenderType: PhysicsRenderType = {
@@ -542,14 +542,14 @@ return function(world: World)
 		do
 			--// Apply Entity Size
 			local result = workspace:Raycast(position, (velocity * deltaTime) + (velocity:Sign() * (size / 2)))
-			
+
 			--// Get is last colliding
 			local isLastColliding = not world:has(entity, flags.LastColliding)
 
-            --// Add LastColliding flag
-            if isLastColliding then
-                world:add(entity, flags.LastColliding)
-            end
+			--// Add LastColliding flag
+			if isLastColliding then
+				world:add(entity, flags.LastColliding)
+			end
 
 			--// Is not Colliding
 			if not result then
@@ -560,37 +560,31 @@ return function(world: World)
 			--// Apply Props
 			world:set(entity, components.Normal, result.Normal)
 			world:add(entity, components.IsColliding)
-           
-			--// Get Normal Velocity
-            local normalVelocity = result.Normal:Dot(velocity) * result.Normal
 
-			--// Get Tangential Velocity 
-            local tangentialVelocity = velocity - normalVelocity
+			--// Get Normal Velocity
+			local normalVelocity = result.Normal:Dot(velocity) * result.Normal
+
+			--// Get Tangential Velocity
+			local tangentialVelocity = velocity - normalVelocity
 
 			--// Get Friction Value
-            local frictionValue = if isLastColliding then
-                1 - 0.08 * deltaTime / tangentialVelocity.Magnitude
-            else
-                1 - 0.08 * ((1 + elasticity) * normalVelocity.Magnitude) / tangentialVelocity.Magnitude 
+			local frictionValue = isLastColliding and 1 - 0.08 * deltaTime / tangentialVelocity.Magnitude
+				or 1 - 0.08 * ((1 + elasticity) * normalVelocity.Magnitude) / tangentialVelocity.Magnitude
 
 			--// Set props
-            world:set(
-                entity, 
-                components.Velocity, 
-                tangentialVelocity * math.max(frictionValue, 0) - elasticity * normalVelocity
-            )
+			world:set(
+				entity,
+				components.Velocity,
+				tangentialVelocity * math.max(frictionValue, 0) - elasticity * normalVelocity
+			)
 
-            world:set(
-                entity, 
-                components.AngularVelocity, 
-                result.Normal:Cross(velocity) / elasticity * angle:ToEulerAnglesYXZ()
-            )
+			world:set(
+				entity,
+				components.AngularVelocity,
+				result.Normal:Cross(velocity) / elasticity * angle:ToEulerAnglesYXZ()
+			)
 
-            world:set(
-                entity,
-                components.Position, 
-                position + result.Normal * 0.01
-            )
+			world:set(entity, components.Position, position + result.Normal * 0.01)
 		end
 
 		--// Update Normal CFrame
