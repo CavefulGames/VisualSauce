@@ -15,7 +15,6 @@ grenadePart.Anchored = true
 grenadePart.Size = Vector3.new(0.5, 1, 0.5)
 grenadePart.BrickColor = BrickColor.Red()
 
-
 task.wait(1)
 
 RunService.Heartbeat:Connect(function(dt)

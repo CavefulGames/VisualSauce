@@ -571,20 +571,32 @@ return function(world: World)
 			local frictionValue = isLastColliding and 1 - 0.08 * deltaTime / tangentialVelocity.Magnitude
 				or 1 - 0.08 * ((1 + elasticity) * normalVelocity.Magnitude) / tangentialVelocity.Magnitude
 
-			--// Set props
-			world:set(
-				entity,
-				components.Velocity,
-				tangentialVelocity * math.max(frictionValue, 0) - elasticity * normalVelocity
-			)
+			--// Get Damping Reflection
+			local dampingReflection = tangentialVelocity * math.max(frictionValue, 0) - elasticity * normalVelocity
 
-			world:set(
-				entity,
-				components.AngularVelocity,
-				result.Normal:Cross(velocity) / elasticity * angle:ToEulerAnglesYXZ()
-			)
+			
 
 			world:set(entity, components.Position, position + result.Normal * 0.01)
+
+			--// Stopped
+			if dampingReflection:Dot(dampingReflection) < (10 * 10) / 15 then
+				--// Apply Stop Velocity
+				world:set(entity, components.Velocity, Vector3.zero)
+				world:set(entity, components.AngularVelocity, Vector3.zero)
+
+				--// Apply flags
+				world:remove(entity, flags.Gravity)
+				world:remove(entity, flags.Collidable)
+			else
+				--// Apply Velocity
+				world:set(entity, components.Velocity, dampingReflection)
+
+				world:set(
+					entity,
+					components.AngularVelocity,
+					result.Normal:Cross(velocity) / elasticity * angle:ToEulerAnglesYXZ()
+				)
+			end
 		end
 
 		--// Update Normal CFrame

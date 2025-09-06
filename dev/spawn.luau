@@ -2,11 +2,13 @@ local visualSauce = require("../src")()
 local world = visualSauce.world
 local ecs = visualSauce.physics
 local components = ecs.components
+local flags = ecs.flags
 
 local module = {}
 module.world = world
 module.ecs = ecs
 module.components = components
+module.flags = flags
 
 function module.physics(info: {
     position: Vector3?,
