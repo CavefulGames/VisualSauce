@@ -47,32 +47,32 @@ return function(world: World, worldProps: WorldProps?)
 		position = world:query(props.Position, props.Velocity):with(flags.Dynamic, render.Basic):without(flags.Static):cached(),
 		angle = world:query(props.Angle, props.AngularVelocity):with(flags.Dynamic, render.Basic):without(flags.Static):cached(),
 		cframe = world:query(props.Position, props.Angle):with(flags.Dynamic, render.Basic):without(flags.Static):cached(),
-		gravityQurey = world:query(props.Velocity):with(flags.Dynamic, flags.Gravity, render.Basic):without(flags.Static):cached(),
-		collisionQurey = world:query(props.Position, props.Velocity, props.Size, props.Elasticity):with(flags.Dynamic, flags.Collision, render.Basic):without(flags.Static):cached(),
+		gravity = world:query(props.Velocity):with(flags.Dynamic, flags.Gravity, render.Basic):without(flags.Static):cached(),
+		collision = world:query(props.Position, props.Velocity, props.Size, props.Elasticity):with(flags.Dynamic, flags.Collision, render.Basic):without(flags.Static):cached(),
 	}
 
 	local grenadeQurey = {
 		position = world:query(props.Position, props.Velocity):with(flags.Dynamic, render.Grenade):without(flags.Static):cached(),
 		angle = world:query(props.Angle, props.AngularVelocity):with(flags.Dynamic, render.Grenade):without(flags.Static):cached(),
 		cframe = world:query(props.Position, props.Angle):with(flags.Dynamic, render.Grenade):without(flags.Static):cached(),
-		gravityQurey = world:query(props.Velocity):with(flags.Dynamic, flags.Gravity, render.Grenade):without(flags.Static):cached(),
-		collisionQurey = world:query(props.Position, props.Velocity, props.Size, props.Elasticity):with(flags.Dynamic, flags.Collision, render.Grenade):without(flags.Static):cached(),
+		gravity = world:query(props.Velocity):with(flags.Dynamic, flags.Gravity, render.Grenade):without(flags.Static):cached(),
+		collision = world:query(props.Position, props.Velocity, props.Size, props.Elasticity):with(flags.Dynamic, flags.Collision, render.Grenade):without(flags.Static):cached(),
 	}
 	
 	local tempentityQurey = {
 		position = world:query(props.Position, props.Velocity):with(flags.Dynamic, render.Tempentity):without(flags.Static):cached(),
 		angle = world:query(props.Angle, props.AngularVelocity):with(flags.Dynamic, render.Tempentity):without(flags.Static):cached(),
 		cframe = world:query(props.Position, props.Angle):with(flags.Dynamic, render.Tempentity):without(flags.Static):cached(),
-		gravityQurey = world:query(props.Velocity):with(flags.Dynamic, flags.Gravity, render.Tempentity):without(flags.Static):cached(),
-		collisionQurey = world:query(props.Position, props.Velocity, props.Size, props.Elasticity):with(flags.Dynamic, flags.Collision, render.Tempentity):without(flags.Static):cached(),
+		gravity = world:query(props.Velocity):with(flags.Dynamic, flags.Gravity, render.Tempentity):without(flags.Static):cached(),
+		collision = world:query(props.Position, props.Velocity, props.Size, props.Elasticity):with(flags.Dynamic, flags.Collision, render.Tempentity):without(flags.Static):cached(),
 	}
 
 	local commonQurey = {
 		position = world:query(props.Position, props.Velocity):with(flags.Dynamic, render.Common):without(flags.Static):cached(),
 		angle = world:query(props.Angle, props.AngularVelocity):with(flags.Dynamic, render.Common):without(flags.Static):cached(),
 		cframe = world:query(props.Position, props.Angle):with(flags.Dynamic, render.Common):without(flags.Static):cached(),
-		gravityQurey = world:query(props.Velocity):with(flags.Dynamic, flags.Gravity, render.Common):without(flags.Static):cached(),
-		collisionQurey = world:query(props.Position, props.Velocity, props.Size, props.Elasticity):with(flags.Dynamic, flags.Collision, render.Common):without(flags.Static):cached(),
+		gravity = world:query(props.Velocity):with(flags.Dynamic, flags.Gravity, render.Common):without(flags.Static):cached(),
+		collision = world:query(props.Position, props.Velocity, props.Size, props.Elasticity):with(flags.Dynamic, flags.Collision, render.Common):without(flags.Static):cached(),
 	}
 
 	local worldProps: WorldProps = worldProps or { gravity = 169 }
@@ -151,25 +151,25 @@ return function(world: World, worldProps: WorldProps?)
 
 	function engine.frame(deltaTime: number) 
 		do
-			for entity: Entity, velocity: Vector3 in basicQurey.gravityQurey do
+			for entity: Entity, velocity: Vector3 in basicQurey.gravity do
 				world:set(entity, props.Velocity, velocity - (Vector3.yAxis * worldProps.gravity * deltaTime))
 			end
 
-			for entity: Entity, velocity: Vector3 in grenadeQurey.gravityQurey do
+			for entity: Entity, velocity: Vector3 in grenadeQurey.gravity do
 				world:set(entity, props.Velocity, velocity - (Vector3.yAxis * worldProps.gravity * deltaTime))
 			end
 
-			for entity: Entity, velocity: Vector3 in tempentityQurey.gravityQurey do
+			for entity: Entity, velocity: Vector3 in tempentityQurey.gravity do
 				world:set(entity, props.Velocity, velocity - (Vector3.yAxis * worldProps.gravity * deltaTime))
 			end
 
-			for entity: Entity, velocity: Vector3 in commonQurey.gravityQurey do
+			for entity: Entity, velocity: Vector3 in commonQurey.gravity do
 				world:set(entity, props.Velocity, velocity - (Vector3.yAxis * worldProps.gravity * deltaTime))
 			end
 		end
 
 		do
-			for entity: Entity, position: Vector3, velocity: Vector3, size: Vector3, elasticity: number in basicQurey.collisionQurey do
+			for entity: Entity, position: Vector3, velocity: Vector3, size: Vector3, elasticity: number in basicQurey.collision do
 				--// Apply Entity Size
 				local result = workspace:Raycast(position, (velocity * deltaTime) + (velocity:Sign() * (size / 2)))
 
@@ -198,7 +198,7 @@ return function(world: World, worldProps: WorldProps?)
 				end
 			end
 
-			for entity: Entity, position: Vector3, velocity: Vector3, size: Vector3, elasticity: number in grenadeQurey.collisionQurey do
+			for entity: Entity, position: Vector3, velocity: Vector3, size: Vector3, elasticity: number in grenadeQurey.collision do
 				local result = workspace:Raycast(position, (velocity * deltaTime) + (velocity:Sign() * (size / 2)))
 
 				--// Is not Colliding
@@ -269,7 +269,7 @@ return function(world: World, worldProps: WorldProps?)
 				end
 			end
 
-			for entity: Entity, position: Vector3, velocity: Vector3, size: Vector3, elasticity: number in tempentityQurey.collisionQurey do
+			for entity: Entity, position: Vector3, velocity: Vector3, size: Vector3, elasticity: number in tempentityQurey.collision do
 				local result = workspace:Raycast(position, (velocity * deltaTime) + (velocity:Sign() * (size / 2)))
 
 				if not result then
@@ -308,7 +308,7 @@ return function(world: World, worldProps: WorldProps?)
 				end
 			end
 
-			for entity: Entity, position: Vector3, velocity: Vector3, size: Vector3, elasticity: number in commonQurey.collisionQurey do
+			for entity: Entity, position: Vector3, velocity: Vector3, size: Vector3, elasticity: number in commonQurey.collision do
 				local result = workspace:Raycast(position, (velocity * deltaTime) + (velocity:Sign() * (size / 2)))
 
 				--// Get is last colliding

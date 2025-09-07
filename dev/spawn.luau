@@ -2,12 +2,14 @@ local visualSauce = require("../src")()
 local world = visualSauce.world
 local ecs = visualSauce.physics
 local components = ecs.components
-local flags = ecs.flags
+local props = components.props
+local flags = components.flags
 
 local module = {}
 module.world = world
 module.ecs = ecs
 module.components = components
+module.props = props
 module.flags = flags
 
 function module.physics(info: {
@@ -18,14 +20,14 @@ function module.physics(info: {
 	velocity: Vector3?,
 	angularVelocity: Vector3?,
 })
-    local entity = ecs.physics()
+    local entity = ecs.basic()
 
-    world:set(entity, components.Position, info.position or Vector3.zero)
-    world:set(entity, components.Angle, info.angle or CFrame.Angles(0, 0, 0))
-    world:set(entity, components.Size, info.size or Vector3.zero)
+    world:set(entity, props.Position, info.position or Vector3.zero)
+    world:set(entity, props.Angle, info.angle or CFrame.Angles(0, 0, 0))
+    world:set(entity, props.Size, info.size or Vector3.zero)
     
-    world:set(entity, components.Velocity, info.velocity or Vector3.zero)
-    world:set(entity, components.AngularVelocity, info.angularVelocity or Vector3.zero)
+    world:set(entity, props.Velocity, info.velocity or Vector3.zero)
+    world:set(entity, props.AngularVelocity, info.angularVelocity or Vector3.zero)
 
     return entity
 end
@@ -40,12 +42,12 @@ function module.tempentity(info: {
 })
     local entity = ecs.tempentity()
 
-    world:set(entity, components.Position, info.position or Vector3.zero)
-    world:set(entity, components.Angle, info.angle or CFrame.Angles(0, 0, 0))
-    world:set(entity, components.Size, info.size or Vector3.zero)
+    world:set(entity, props.Position, info.position or Vector3.zero)
+    world:set(entity, props.Angle, info.angle or CFrame.Angles(0, 0, 0))
+    world:set(entity, props.Size, info.size or Vector3.zero)
     
-    world:set(entity, components.Velocity, info.velocity or Vector3.zero)
-    world:set(entity, components.AngularVelocity, info.angularVelocity or Vector3.zero)
+    world:set(entity, props.Velocity, info.velocity or Vector3.zero)
+    world:set(entity, props.AngularVelocity, info.angularVelocity or Vector3.zero)
 
     return entity
 end
@@ -60,12 +62,12 @@ function module.grenade(info: {
 })
     local entity = ecs.grenade()
 
-    world:set(entity, components.Position, info.position or Vector3.zero)
-    world:set(entity, components.Angle, info.angle or CFrame.Angles(0, 0, 0))
-    world:set(entity, components.Size, info.size or Vector3.zero)
+    world:set(entity, props.Position, info.position or Vector3.zero)
+    world:set(entity, props.Angle, info.angle or CFrame.Angles(0, 0, 0))
+    world:set(entity, props.Size, info.size or Vector3.zero)
     
-    world:set(entity, components.Velocity, info.velocity or Vector3.zero)
-    world:set(entity, components.AngularVelocity, info.angularVelocity or Vector3.zero)
+    world:set(entity, props.Velocity, info.velocity or Vector3.zero)
+    world:set(entity, props.AngularVelocity, info.angularVelocity or Vector3.zero)
 
     return entity
 end
@@ -78,15 +80,15 @@ function module.normal(info: {
 	velocity: Vector3?,
 	angularVelocity: Vector3?,
 })
-    local entity = ecs.normal()
+    local entity = ecs.common()
     local size = info.size or Vector3.zero
 
-    world:set(entity, components.Position, info.position or Vector3.zero)
-    world:set(entity, components.Angle, info.angle or CFrame.Angles(0, 0, 0))
-    world:set(entity, components.Size, size or Vector3.zero)
+    world:set(entity, props.Position, info.position or Vector3.zero)
+    world:set(entity, props.Angle, info.angle or CFrame.Angles(0, 0, 0))
+    world:set(entity, props.Size, size or Vector3.zero)
     
-    world:set(entity, components.Velocity, info.velocity or Vector3.zero)
-    world:set(entity, components.AngularVelocity, info.angularVelocity or Vector3.zero)
+    world:set(entity, props.Velocity, info.velocity or Vector3.zero)
+    world:set(entity, props.AngularVelocity, info.angularVelocity or Vector3.zero)
 
     return entity
 end
