@@ -77,17 +77,17 @@ return function(world: World, worldProps: WorldProps?)
 
 	local worldProps: WorldProps = worldProps or { gravity = 169 }
 	
-	local engine = {}
+	local system = {}
 
-	engine.worldProps = worldProps
+	system.worldProps = worldProps
 
-	engine.components = {
+	system.components = {
 		props = props,
 		flags = flags,
 		render = render,
 	}
 
-	function engine.default(id: number?)
+	function system.default(id: number?)
 		local entity = world:entity(id)
 
 		world:set(entity, props.Position, Vector3.zero)
@@ -104,8 +104,8 @@ return function(world: World, worldProps: WorldProps?)
 		return entity
 	end
 
-	function engine.basic(id: number?)
-		local entity = engine.default(id)
+	function system.basic(id: number?)
+		local entity = system.default(id)
 		
 		world:add(entity, flags.Dynamic)
 		world:add(entity, flags.Collision)
@@ -115,8 +115,8 @@ return function(world: World, worldProps: WorldProps?)
 		return entity
 	end
 
-	function engine.grenade(id: number?)
-		local entity = engine.default(id)
+	function system.grenade(id: number?)
+		local entity = system.default(id)
 		
 		world:add(entity, flags.Dynamic)
 		world:add(entity, flags.Collision)
@@ -126,8 +126,8 @@ return function(world: World, worldProps: WorldProps?)
 		return entity
 	end
 
-	function engine.tempentity(id: number?)
-		local entity = engine.default(id)
+	function system.tempentity(id: number?)
+		local entity = system.default(id)
 		
 		world:add(entity, flags.Dynamic)
 		world:add(entity, flags.Collision)
@@ -138,8 +138,8 @@ return function(world: World, worldProps: WorldProps?)
 		return entity
 	end
 
-	function engine.common(id: number?)
-		local entity = engine.default(id)
+	function system.common(id: number?)
+		local entity = system.default(id)
 		
 		world:add(entity, flags.Dynamic)
 		world:add(entity, flags.Collision)
@@ -149,7 +149,7 @@ return function(world: World, worldProps: WorldProps?)
 		return entity
 	end
 
-	function engine.frame(deltaTime: number) 
+	function system.frame(deltaTime: number) 
 		do
 			for entity: Entity, velocity: Vector3 in basicQurey.gravity do
 				world:set(entity, props.Velocity, velocity - (Vector3.yAxis * worldProps.gravity * deltaTime))
@@ -435,5 +435,5 @@ return function(world: World, worldProps: WorldProps?)
 		end
 	end
 
-	return engine
+	return system
 end
